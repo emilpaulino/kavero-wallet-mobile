@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kavero_wallet_mobile/features/auth/screens/register_screen.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/main_navigation_screen.dart';
 import '../services/auth_service.dart';
@@ -48,9 +49,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (mounted) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(
-            builder: (_) => const MainNavigationScreen(),
-          ),
+          MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
         );
       }
     } catch (e) {
@@ -79,7 +78,7 @@ class _LoginScreenState extends State<LoginScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 40),
-              
+
               // Top Brand
               Text(
                 'KAVERO',
@@ -103,10 +102,7 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 6),
               Text(
                 'Inicia sesión para continuar',
-                style: TextStyle(
-                  color: AppColors.muted(context),
-                  fontSize: 16,
-                ),
+                style: TextStyle(color: AppColors.muted(context), fontSize: 16),
               ),
               const SizedBox(height: 48),
 
@@ -162,7 +158,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 style: TextStyle(color: AppColors.foreground(context)),
                 decoration: InputDecoration(
                   hintText: 'ejemplo@correo.com',
-                  hintStyle: TextStyle(color: AppColors.muted(context).withOpacity(0.7)),
+                  hintStyle: TextStyle(
+                    color: AppColors.muted(context).withOpacity(0.7),
+                  ),
                   filled: true,
                   fillColor: AppColors.card(context),
                   prefixIcon: Icon(
@@ -209,7 +207,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 style: TextStyle(color: AppColors.foreground(context)),
                 decoration: InputDecoration(
                   hintText: '••••••••',
-                  hintStyle: TextStyle(color: AppColors.muted(context).withOpacity(0.7)),
+                  hintStyle: TextStyle(
+                    color: AppColors.muted(context).withOpacity(0.7),
+                  ),
                   filled: true,
                   fillColor: AppColors.card(context),
                   prefixIcon: Icon(
@@ -288,6 +288,18 @@ class _LoginScreenState extends State<LoginScreen> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const RegisterScreen()),
+                    );
+                  },
+                  child: const Text('¿No tienes una cuenta? Crear cuenta'),
                 ),
               ),
             ],
