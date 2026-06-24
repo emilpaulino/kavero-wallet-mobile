@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../core/theme/app_colors.dart';
 import '../features/home/home_screen.dart';
+import '../features/profile/screens/profile_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -40,14 +41,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         );
 
       case 3:
-        return const Scaffold(
-          body: Center(
-            child: Text(
-              'Profile',
-              style: TextStyle(fontSize: 30),
-            ),
-          ),
-        );
+        return const ProfileScreen();
 
       default:
         return const HomeScreen();
@@ -57,6 +51,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.bg(context),
       extendBody: true,
 
       body: _getScreen(),
