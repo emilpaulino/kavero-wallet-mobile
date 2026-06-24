@@ -59,10 +59,119 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(
-        builder: (_) => const LoginScreen(),
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      (route) => false,
+    );
+  }
+
+  Future<void> showEditProfileModal() async {
+    final nameController = TextEditingController(text: profile?.name ?? '');
+
+    final lastNameController = TextEditingController(
+      text: profile?.lastName ?? '',
+    );
+
+    bool isSaving = false;
+
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.card(context),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
       ),
-          (route) => false,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 24,
+                right: 24,
+                top: 24,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Editar perfil',
+                    style: TextStyle(
+                      color: AppColors.foreground(context),
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  TextField(
+                    controller: nameController,
+                    decoration: const InputDecoration(labelText: 'Nombre'),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  TextField(
+                    controller: lastNameController,
+                    decoration: const InputDecoration(labelText: 'Apellido'),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: ElevatedButton(
+                      onPressed: isSaving
+                          ? null
+                          : () async {
+                              setModalState(() {
+                                isSaving = true;
+                              });
+
+                              try {
+                                final updatedProfile = await profileService
+                                    .updateProfile(
+                                      name: nameController.text.trim(),
+                                      lastName: lastNameController.text.trim(),
+                                    );
+
+                                if (!mounted) return;
+
+                                setState(() {
+                                  profile = updatedProfile;
+                                });
+
+                                Navigator.pop(context);
+                              } catch (e) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'No se pudo actualizar el perfil',
+                                    ),
+                                  ),
+                                );
+                              } finally {
+                                setModalState(() {
+                                  isSaving = false;
+                                });
+                              }
+                            },
+                      child: isSaving
+                          ? const SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Text('Guardar'),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -71,10 +180,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       padding: const EdgeInsets.only(bottom: 12),
       child: Text(
         title,
-        style: const TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.w700,
-        ),
+        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
       ),
     );
   }
@@ -91,34 +197,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
       decoration: BoxDecoration(
         color: AppColors.card(context),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: AppColors.border(context),
-        ),
+        border: Border.all(color: AppColors.border(context)),
       ),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 20,
-          vertical: 6,
-        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
         leading: Icon(
           icon,
-          color: danger
-              ? Colors.red
-              : AppColors.primary(context),
+          color: danger ? Colors.red : AppColors.primary(context),
         ),
         title: Text(
           title,
           style: TextStyle(
-            color: danger
-                ? Colors.red
-                : AppColors.foreground(context),
+            color: danger ? Colors.red : AppColors.foreground(context),
             fontWeight: FontWeight.w600,
           ),
         ),
         subtitle: subtitle != null ? Text(subtitle) : null,
-        trailing: danger
-            ? null
-            : const Icon(Icons.chevron_right),
+        trailing: danger ? null : const Icon(Icons.chevron_right),
         onTap: onTap,
       ),
     );
@@ -130,9 +225,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       return Scaffold(
         backgroundColor: AppColors.bg(context),
         body: Center(
-          child: CircularProgressIndicator(
-            color: AppColors.primary(context),
-          ),
+          child: CircularProgressIndicator(color: AppColors.primary(context)),
         ),
       );
     }
@@ -140,9 +233,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (profile == null) {
       return Scaffold(
         backgroundColor: AppColors.bg(context),
-        body: const Center(
-          child: Text('No es posible cargar el perfil'),
-        ),
+        body: const Center(child: Text('No es posible cargar el perfil')),
       );
     }
 
@@ -152,12 +243,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       body: SafeArea(
         bottom: false,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(
-            24,
-            24,
-            24,
-            120,
-          ),
+          padding: const EdgeInsets.fromLTRB(24, 24, 24, 120),
           children: [
             Text(
               'Perfil',
@@ -172,10 +258,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(
-                vertical: 28,
-                horizontal: 24,
-              ),
+              padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 24),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(32),
                 gradient: const LinearGradient(
@@ -194,7 +277,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     top: 0,
                     right: 0,
                     child: IconButton(
-                      onPressed: () {},
+                      onPressed: showEditProfileModal,
                       icon: const Icon(
                         Icons.edit_rounded,
                         color: Colors.white,
