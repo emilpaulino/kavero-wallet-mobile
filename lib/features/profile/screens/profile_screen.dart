@@ -77,6 +77,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     bool isSaving = false;
     String? selectedPhoto = profile?.profilePhoto;
+    String? modalErrorMessage;
 
     await showModalBottomSheet(
       context: context,
@@ -106,6 +107,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
+
+                  if (modalErrorMessage != null) ...[
+                    const SizedBox(height: 16),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.red.withOpacity(0.3)),
+                      ),
+                      child: Text(
+                        modalErrorMessage!,
+                        style: const TextStyle(
+                          color: Colors.red,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ],
 
                   const SizedBox(height: 24),
 
@@ -247,6 +270,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           : () async {
                               setModalState(() {
                                 isSaving = true;
+                                modalErrorMessage = null;
                               });
 
                               try {
@@ -264,13 +288,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                                 Navigator.pop(context);
                               } catch (e) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      'No se pudo actualizar el perfil',
-                                    ),
-                                  ),
-                                );
+                                String message = 'No se pudo actualizar el perfil';
+                                if (e is Exception) {
+                                  message = e.toString().replaceAll('Exception: ', '');
+                                }
+                                setModalState(() {
+                                  modalErrorMessage = message;
+                                });
                               } finally {
                                 setModalState(() {
                                   isSaving = false;
@@ -336,6 +360,205 @@ class _ProfileScreenState extends State<ProfileScreen> {
         trailing: danger ? null : const Icon(Icons.chevron_right),
         onTap: onTap,
       ),
+    );
+  }
+
+  Future<void> showChangePasswordModal() async {
+    final currentPasswordController = TextEditingController();
+    final newPasswordController = TextEditingController();
+    final confirmPasswordController = TextEditingController();
+
+    bool isSaving = false;
+    String? modalErrorMessage;
+
+    bool obscureCurrent = true;
+    bool obscureNew = true;
+    bool obscureConfirm = true;
+
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.card(context),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 24,
+                right: 24,
+                top: 24,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Cambiar contraseña',
+                    style: TextStyle(
+                      color: AppColors.foreground(context),
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
+                  if (modalErrorMessage != null) ...[
+                    const SizedBox(height: 16),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.red.withOpacity(0.3)),
+                      ),
+                      child: Text(
+                        modalErrorMessage!,
+                        style: const TextStyle(
+                          color: Colors.red,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ],
+
+                  const SizedBox(height: 24),
+
+                  TextField(
+                    controller: currentPasswordController,
+                    obscureText: obscureCurrent,
+                    decoration: InputDecoration(
+                      labelText: 'Contraseña actual',
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          obscureCurrent
+                              ? Icons.visibility
+                              : Icons.visibility_off,
+                        ),
+                        onPressed: () {
+                          setModalState(() {
+                            obscureCurrent = !obscureCurrent;
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  TextField(
+                    controller: newPasswordController,
+                    obscureText: obscureNew,
+                    decoration: InputDecoration(
+                      labelText: 'Nueva contraseña',
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          obscureNew
+                              ? Icons.visibility
+                              : Icons.visibility_off,
+                        ),
+                        onPressed: () {
+                          setModalState(() {
+                            obscureNew = !obscureNew;
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  TextField(
+                    controller: confirmPasswordController,
+                    obscureText: obscureConfirm,
+                    decoration: InputDecoration(
+                      labelText: 'Confirmar contraseña',
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          obscureConfirm
+                              ? Icons.visibility
+                              : Icons.visibility_off,
+                        ),
+                        onPressed: () {
+                          setModalState(() {
+                            obscureConfirm = !obscureConfirm;
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: ElevatedButton(
+                      onPressed: isSaving
+                          ? null
+                          : () async {
+                        setModalState(() {
+                          isSaving = true;
+                        });
+
+                        try {
+                          setModalState(() {
+                            modalErrorMessage = null;
+                          });
+
+                          await profileService.changePassword(
+                            currentPassword:
+                            currentPasswordController.text.trim(),
+                            newPassword:
+                            newPasswordController.text.trim(),
+                            confirmPassword:
+                            confirmPasswordController.text.trim(),
+                          );
+
+                          if (!mounted) return;
+
+                          Navigator.pop(context);
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'Contraseña actualizada correctamente',
+                              ),
+                            ),
+                          );
+                        } catch (e) {
+                          String message = 'No se pudo cambiar la contraseña';
+                          if (e is Exception) {
+                            message = e.toString().replaceAll('Exception: ', '');
+                          }
+                          setModalState(() {
+                            modalErrorMessage = message;
+                          });
+                        } finally {
+                          setModalState(() {
+                            isSaving = false;
+                          });
+                        }
+                      },
+                      child: isSaving
+                          ? const SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                          : const Text('Guardar'),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -475,7 +698,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             buildOptionCard(
               icon: Icons.lock_outline,
               title: 'Cambiar contraseña',
-              subtitle: 'Próximamente',
+              onTap: showChangePasswordModal,
             ),
 
             const SizedBox(height: 12),

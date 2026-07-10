@@ -60,7 +60,13 @@ class ProfileService {
     );
 
     if (response.statusCode != 200) {
-      throw Exception('Failed to update profile');
+      try {
+        final data = jsonDecode(response.body);
+        throw Exception(data['message'] ?? 'Failed to update profile');
+      } catch (e) {
+        if (e is Exception) rethrow;
+        throw Exception('Failed to update profile');
+      }
     }
 
     final data = jsonDecode(response.body);
@@ -68,5 +74,39 @@ class ProfileService {
     return UserProfile.fromJson(data);
   }
 
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+    required String confirmPassword,
+  }) async {
+    final token = await storageService.getToken();
+
+    if (token == null) {
+      throw Exception('User not authenticated');
+    }
+
+    final response = await http.put(
+      Uri.parse('$baseUrl/users/me/password'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({
+        'currentPassword': currentPassword,
+        'newPassword': newPassword,
+        'confirmPassword': confirmPassword,
+      }),
+    );
+
+    if (response.statusCode != 204) {
+      try {
+        final data = jsonDecode(response.body);
+        throw Exception(data['message'] ?? 'Failed to change password');
+      } catch (e) {
+        if (e is Exception) rethrow;
+        throw Exception('Failed to change password');
+      }
+    }
+  }
 
 }
