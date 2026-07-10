@@ -38,6 +38,7 @@ class ProfileService {
   Future<UserProfile> updateProfile({
     required String name,
     required String lastName,
+    String? profilePhoto,
   }) async {
     final token = await storageService.getToken();
 
@@ -54,6 +55,7 @@ class ProfileService {
       body: jsonEncode({
         'name': name,
         'lastName': lastName,
+        'profilePhoto': profilePhoto,
       }),
     );
 

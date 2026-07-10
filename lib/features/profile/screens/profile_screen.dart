@@ -6,6 +6,9 @@ import '../../../core/theme/app_colors.dart';
 import '../../auth/screens/login_screen.dart';
 import '../models/user_profile.dart';
 import '../services/profile_service.dart';
+import 'dart:convert';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -17,6 +20,7 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   final ProfileService profileService = ProfileService();
   final StorageService storageService = StorageService();
+  final ImagePicker _imagePicker = ImagePicker();
 
   UserProfile? profile;
   bool isLoading = true;
@@ -72,6 +76,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
 
     bool isSaving = false;
+    String? selectedPhoto = profile?.profilePhoto;
 
     await showModalBottomSheet(
       context: context,
@@ -104,6 +109,121 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                   const SizedBox(height: 24),
 
+                  GestureDetector(
+                    onTap: () async {
+                      await showModalBottomSheet(
+                        context: context,
+                        builder: (context) {
+                          return SafeArea(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                ListTile(
+                                  leading: const Icon(Icons.camera_alt),
+                                  title: const Text('Tomar foto'),
+                                  onTap: () async {
+                                    Navigator.pop(context);
+
+                                    final image = await _imagePicker.pickImage(
+                                      source: ImageSource.camera,
+                                      imageQuality: 70,
+                                    );
+
+                                    if (image == null) return;
+
+                                    final bytes = await image.readAsBytes();
+
+                                    setModalState(() {
+                                      selectedPhoto = base64Encode(bytes);
+                                    });
+                                  },
+                                ),
+
+                                ListTile(
+                                  leading: const Icon(Icons.photo_library),
+                                  title: const Text('Elegir de la galería'),
+                                  onTap: () async {
+                                    Navigator.pop(context);
+
+                                    final image = await _imagePicker.pickImage(
+                                      source: ImageSource.gallery,
+                                      imageQuality: 70,
+                                    );
+
+                                    if (image == null) return;
+
+                                    final bytes = await image.readAsBytes();
+
+                                    setModalState(() {
+                                      selectedPhoto = base64Encode(bytes);
+                                    });
+                                  },
+                                ),
+
+                                if (selectedPhoto != null)
+                                  ListTile(
+                                    leading: const Icon(Icons.delete, color: Colors.red),
+                                    title: const Text(
+                                      'Quitar foto',
+                                      style: TextStyle(color: Colors.red),
+                                    ),
+                                    onTap: () {
+                                      Navigator.pop(context);
+
+                                      setModalState(() {
+                                        selectedPhoto = null;
+                                      });
+                                    },
+                                  ),
+                              ],
+                            ),
+                          );
+                        },
+                      );
+                    },
+                    child: Stack(
+                      alignment: Alignment.bottomRight,
+                      children: [
+                        CircleAvatar(
+                          radius: 50,
+                          backgroundColor: Colors.grey.shade300,
+                          backgroundImage: selectedPhoto != null
+                              ? MemoryImage(base64Decode(selectedPhoto!))
+                              : null,
+                          child: selectedPhoto == null
+                              ? Text(
+                            profile!.name[0].toUpperCase(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 32,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          )
+                              : null,
+                        ),
+
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary(context),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: AppColors.card(context),
+                              width: 2,
+                            ),
+                          ),
+                          child: const Icon(
+                            Icons.camera_alt,
+                            color: Colors.white,
+                            size: 18,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
                   TextField(
                     controller: nameController,
                     decoration: const InputDecoration(labelText: 'Nombre'),
@@ -130,11 +250,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               });
 
                               try {
-                                final updatedProfile = await profileService
-                                    .updateProfile(
-                                      name: nameController.text.trim(),
-                                      lastName: lastNameController.text.trim(),
-                                    );
+                                final updatedProfile = await profileService.updateProfile(
+                                  name: nameController.text.trim(),
+                                  lastName: lastNameController.text.trim(),
+                                  profilePhoto: selectedPhoto,
+                                );
 
                                 if (!mounted) return;
 
@@ -294,14 +414,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         CircleAvatar(
                           radius: 52,
                           backgroundColor: Colors.white24,
-                          child: Text(
+                          backgroundImage: profile!.profilePhoto != null
+                              ? MemoryImage(base64Decode(profile!.profilePhoto!))
+                              : null,
+                          child: profile!.profilePhoto == null
+                              ? Text(
                             profile!.name[0].toUpperCase(),
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 34,
                               fontWeight: FontWeight.bold,
                             ),
-                          ),
+                          )
+                              : null,
                         ),
 
                         const SizedBox(height: 16),
