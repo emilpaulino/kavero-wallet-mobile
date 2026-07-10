@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../core/services/local_auth_service.dart';
 import '../../../core/storage_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../auth/screens/login_screen.dart';
@@ -24,6 +25,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   UserProfile? profile;
   bool isLoading = true;
+  bool biometricsEnabled = false;
 
   @override
   void initState() {
@@ -42,8 +44,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final result = await profileService.getProfile();
 
       if (mounted) {
+        final enabled = await storageService.isBiometricsEnabled();
+
         setState(() {
           profile = result;
+          biometricsEnabled = enabled;
           isLoading = false;
         });
       }
@@ -57,7 +62,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> logout() async {
-    await storageService.clearToken();
+    Future<void> logout() async {
+      if (!mounted) return;
+
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+            (route) => false,
+      );
+    }
 
     if (!mounted) return;
 
@@ -699,6 +712,69 @@ class _ProfileScreenState extends State<ProfileScreen> {
               icon: Icons.lock_outline,
               title: 'Cambiar contraseña',
               onTap: showChangePasswordModal,
+            ),
+
+            Container(
+              margin: const EdgeInsets.only(bottom: 14),
+              decoration: BoxDecoration(
+                color: AppColors.card(context),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: AppColors.border(context)),
+              ),
+              child: SwitchListTile(
+                secondary: Icon(
+                  Icons.fingerprint,
+                  color: AppColors.primary(context),
+                ),
+                title: Text(
+                  'Autenticación Biométrica',
+                  style: TextStyle(
+                    color: AppColors.foreground(context),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                subtitle: const Text(
+                  'Usar biometría para iniciar sesión',
+                ),
+                value: biometricsEnabled,
+                onChanged: (value) async {
+                  final localAuth = LocalAuthService();
+
+                  if (value) {
+                    final authenticated = await localAuth.authenticate();
+
+                    if (authenticated) {
+                      await storageService.saveBiometricsEnabled(true);
+
+                      setState(() {
+                        biometricsEnabled = true;
+                      });
+
+                      if (!mounted) return;
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Autenticación biométrica activada'),
+                        ),
+                      );
+                    }
+                  } else {
+                    await storageService.clearBiometrics();
+
+                    setState(() {
+                      biometricsEnabled = false;
+                    });
+
+                    if (!mounted) return;
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Autenticación biométrica desactivada'),
+                      ),
+                    );
+                  }
+                },
+              ),
             ),
 
             const SizedBox(height: 12),

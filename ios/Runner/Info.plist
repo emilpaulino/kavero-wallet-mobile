@@ -75,5 +75,8 @@
 
     <key>NSCameraUsageDescription</key>
     <string>Esta aplicación necesita acceder a la cámara para tomar una foto de perfil.</string>
+
+    <key>NSFaceIDUsageDescription</key>
+    <string>Usa Face ID para acceder rápidamente a tu cuenta.</string>
 </dict>
 </plist>
