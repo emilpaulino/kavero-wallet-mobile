@@ -47,14 +47,6 @@ The API is responsible for authentication, account management, category manageme
 * Dark mode
 * Responsive design
 
-## Screenshots
-
-<p align="center">
-  <img src="screenshots/login.jpeg" width="250">
-  <img src="screenshots/home.jpeg" width="250">
-  <img src="screenshots/new-transaction.jpeg" width="250">
-</p>
-
 ## Architecture
 
 ```text
