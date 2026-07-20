@@ -28,6 +28,8 @@ The API is responsible for authentication, account management, category manageme
 
 * JWT-based login
 * Secure token storage
+* Biometric authentication (Face ID / Fingerprint)
+* Device passcode/PIN fallback
 
 ### Home
 
@@ -40,6 +42,13 @@ The API is responsible for authentication, account management, category manageme
 * Create expense transactions
 * Account selection
 * Category selection
+
+### Profile
+
+* View user profile
+* Edit profile information
+* Upload and update profile picture
+* Enable/disable biometric authentication
 
 ### User Interface
 
