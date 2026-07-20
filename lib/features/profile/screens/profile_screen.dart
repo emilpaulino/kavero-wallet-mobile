@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -8,7 +9,6 @@ import '../../auth/screens/login_screen.dart';
 import '../models/user_profile.dart';
 import '../services/profile_service.dart';
 import 'dart:convert';
-import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -62,16 +62,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> logout() async {
-    Future<void> logout() async {
-      if (!mounted) return;
-
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (_) => const LoginScreen()),
-            (route) => false,
-      );
-    }
-
     if (!mounted) return;
 
     Navigator.pushAndRemoveUntil(
@@ -593,210 +583,240 @@ class _ProfileScreenState extends State<ProfileScreen> {
       );
     }
 
+    final double statusBarHeight = MediaQuery.of(context).padding.top;
+    final double headerHeight = statusBarHeight + 70;
+
     return Scaffold(
       backgroundColor: AppColors.bg(context),
       extendBody: true,
-      body: SafeArea(
-        bottom: false,
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(24, 24, 24, 120),
-          children: [
-            Text(
-              'Perfil',
-              style: TextStyle(
-                color: AppColors.foreground(context),
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 24),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(32),
-                gradient: const LinearGradient(
-                  colors: [
-                    Color(0xFF047857),
-                    Color(0xFF10B981),
-                    Color(0xFF34D399),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-              ),
-              child: Stack(
-                children: [
-                  Positioned(
-                    top: 0,
-                    right: 0,
-                    child: IconButton(
-                      onPressed: showEditProfileModal,
-                      icon: const Icon(
-                        Icons.edit_rounded,
-                        color: Colors.white,
-                        size: 24,
-                      ),
-                    ),
-                  ),
-
-                  SizedBox(
-                    width: double.infinity,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        CircleAvatar(
-                          radius: 52,
-                          backgroundColor: Colors.white24,
-                          backgroundImage: profile!.profilePhoto != null
-                              ? MemoryImage(base64Decode(profile!.profilePhoto!))
-                              : null,
-                          child: profile!.profilePhoto == null
-                              ? Text(
-                            profile!.name[0].toUpperCase(),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 34,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          )
-                              : null,
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        Text(
-                          '${profile!.name} ${profile!.lastName}',
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-
-                        const SizedBox(height: 6),
-
-                        Text(
-                          profile!.email,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            color: Colors.white70,
-                            fontSize: 15,
-                          ),
-                        ),
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: ListView(
+              padding: EdgeInsets.fromLTRB(24, headerHeight + 12, 24, 120),
+              children: [
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 24),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(32),
+                    gradient: const LinearGradient(
+                      colors: [
+                        Color(0xFF047857),
+                        Color(0xFF10B981),
+                        Color(0xFF34D399),
                       ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                     ),
                   ),
-                ],
-              ),
-            ),
+                  child: Stack(
+                    children: [
+                      Positioned(
+                        top: 0,
+                        right: 0,
+                        child: IconButton(
+                          onPressed: showEditProfileModal,
+                          icon: const Icon(
+                            Icons.edit_rounded,
+                            color: Colors.white,
+                            size: 24,
+                          ),
+                        ),
+                      ),
 
-            const SizedBox(height: 32),
+                      SizedBox(
+                        width: double.infinity,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            CircleAvatar(
+                              radius: 52,
+                              backgroundColor: Colors.white24,
+                              backgroundImage: profile!.profilePhoto != null
+                                  ? MemoryImage(base64Decode(profile!.profilePhoto!))
+                                  : null,
+                              child: profile!.profilePhoto == null
+                                  ? Text(
+                                profile!.name[0].toUpperCase(),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 34,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              )
+                                  : null,
+                            ),
 
-            buildSectionTitle('Preferencias'),
+                            const SizedBox(height: 16),
 
-            buildOptionCard(
-              icon: Icons.attach_money,
-              title: 'Moneda preferida',
-              subtitle: profile!.preferredCurrency,
-            ),
+                            Text(
+                              '${profile!.name} ${profile!.lastName}',
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
 
-            const SizedBox(height: 12),
+                            const SizedBox(height: 6),
 
-            buildSectionTitle('Seguridad'),
-
-            buildOptionCard(
-              icon: Icons.lock_outline,
-              title: 'Cambiar contraseña',
-              onTap: showChangePasswordModal,
-            ),
-
-            Container(
-              margin: const EdgeInsets.only(bottom: 14),
-              decoration: BoxDecoration(
-                color: AppColors.card(context),
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: AppColors.border(context)),
-              ),
-              child: SwitchListTile(
-                secondary: Icon(
-                  Icons.fingerprint,
-                  color: AppColors.primary(context),
-                ),
-                title: Text(
-                  'Autenticación Biométrica',
-                  style: TextStyle(
-                    color: AppColors.foreground(context),
-                    fontWeight: FontWeight.w600,
+                            Text(
+                              profile!.email,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 15,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                subtitle: const Text(
-                  'Usar biometría para iniciar sesión',
+
+                const SizedBox(height: 32),
+
+                buildSectionTitle('Preferencias'),
+
+                buildOptionCard(
+                  icon: Icons.attach_money,
+                  title: 'Moneda preferida',
+                  subtitle: profile!.preferredCurrency,
                 ),
-                value: biometricsEnabled,
-                onChanged: (value) async {
-                  final localAuth = LocalAuthService();
 
-                  if (value) {
-                    final authenticated = await localAuth.authenticate();
+                const SizedBox(height: 12),
 
-                    if (authenticated) {
-                      await storageService.saveBiometricsEnabled(true);
+                buildSectionTitle('Seguridad'),
 
-                      setState(() {
-                        biometricsEnabled = true;
-                      });
+                buildOptionCard(
+                  icon: Icons.lock_outline,
+                  title: 'Cambiar contraseña',
+                  onTap: showChangePasswordModal,
+                ),
 
-                      if (!mounted) return;
-
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Autenticación biométrica activada'),
-                        ),
-                      );
-                    }
-                  } else {
-                    await storageService.clearBiometrics();
-
-                    setState(() {
-                      biometricsEnabled = false;
-                    });
-
-                    if (!mounted) return;
-
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Autenticación biométrica desactivada'),
+                Container(
+                  margin: const EdgeInsets.only(bottom: 14),
+                  decoration: BoxDecoration(
+                    color: AppColors.card(context),
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: AppColors.border(context)),
+                  ),
+                  child: SwitchListTile(
+                    secondary: Icon(
+                      Icons.fingerprint,
+                      color: AppColors.primary(context),
+                    ),
+                    title: Text(
+                      'Autenticación Biométrica',
+                      style: TextStyle(
+                        color: AppColors.foreground(context),
+                        fontWeight: FontWeight.w600,
                       ),
-                    );
-                  }
-                },
+                    ),
+                    subtitle: const Text(
+                      'Usar biometría para iniciar sesión',
+                    ),
+                    value: biometricsEnabled,
+                    onChanged: (value) async {
+                      final localAuth = LocalAuthService();
+
+                      if (value) {
+                        final authenticated = await localAuth.authenticate();
+
+                        if (authenticated) {
+                          await storageService.saveBiometricsEnabled(true);
+
+                          setState(() {
+                            biometricsEnabled = true;
+                          });
+
+                          if (!mounted) return;
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Autenticación biométrica activada'),
+                            ),
+                          );
+                        }
+                      } else {
+                        await storageService.clearBiometrics();
+
+                        setState(() {
+                          biometricsEnabled = false;
+                        });
+
+                        if (!mounted) return;
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Autenticación biométrica desactivada'),
+                          ),
+                        );
+                      }
+                    },
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
+                buildSectionTitle('Acerca de'),
+
+                buildOptionCard(
+                  icon: Icons.info_outline,
+                  title: 'Versión',
+                  subtitle: '1.0.0',
+                ),
+
+                const SizedBox(height: 24),
+
+                buildOptionCard(
+                  icon: Icons.logout,
+                  title: 'Cerrar sesión',
+                  danger: true,
+                  onTap: logout,
+                ),
+              ],
+            ),
+          ),
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: ClipRect(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+                child: Container(
+                  padding: EdgeInsets.fromLTRB(24, statusBarHeight + 12, 24, 12),
+                  decoration: BoxDecoration(
+                    color: AppColors.bg(context).withOpacity(0.70),
+                    border: Border(
+                      bottom: BorderSide(
+                        color: AppColors.border(context),
+                        width: 1,
+                      ),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'PERFIL',
+                        style: TextStyle(
+                          color: AppColors.primary(context),
+                          fontSize: 25,
+                          letterSpacing: 4,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
-
-            const SizedBox(height: 12),
-
-            buildSectionTitle('Acerca de'),
-
-            buildOptionCard(
-              icon: Icons.info_outline,
-              title: 'Versión',
-              subtitle: '1.0.0',
-            ),
-
-            const SizedBox(height: 24),
-
-            buildOptionCard(
-              icon: Icons.logout,
-              title: 'Cerrar sesión',
-              danger: true,
-              onTap: logout,
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

@@ -16,7 +16,7 @@ class LocalAuthService {
       final authenticated = await _localAuth.authenticate(
         localizedReason: 'Autentícate para acceder a Kavero Wallet',
         options: const AuthenticationOptions(
-          biometricOnly: true,
+          biometricOnly: false,
           stickyAuth: true,
         ),
       );
@@ -34,5 +34,4 @@ class LocalAuthService {
   Future<List<BiometricType>> getAvailableBiometrics() async {
     return await _localAuth.getAvailableBiometrics();
   }
-
 }
