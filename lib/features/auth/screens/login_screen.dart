@@ -3,6 +3,11 @@ import 'package:kavero_wallet_mobile/features/auth/screens/register_screen.dart'
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/main_navigation_screen.dart';
 import '../services/auth_service.dart';
+import '../../../core/storage_service.dart';
+import '../../../core/services/local_auth_service.dart';
+import 'package:local_auth/local_auth.dart';
+import 'dart:io';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -15,9 +20,20 @@ class _LoginScreenState extends State<LoginScreen> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final authService = AuthService();
+  final storageService = StorageService();
+  final localAuthService = LocalAuthService();
+
+  bool showBiometricLogin = false;
+  BiometricType? biometricType;
 
   bool isLoading = false;
   String? errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    loadBiometrics();
+  }
 
   @override
   void dispose() {
@@ -65,6 +81,32 @@ class _LoginScreenState extends State<LoginScreen> {
         });
       }
     }
+  }
+
+  Future<void> loginWithBiometrics() async {
+    final authenticated = await localAuthService.authenticate();
+
+    if (!mounted) return;
+
+    if (authenticated) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const MainNavigationScreen(),
+        ),
+      );
+    }
+  }
+
+  Future<void> loadBiometrics() async {
+    final token = await storageService.getToken();
+    final enabled = await storageService.isBiometricsEnabled();
+
+    if (!mounted) return;
+
+    setState(() {
+      showBiometricLogin = token != null && enabled;
+    });
   }
 
   @override
@@ -290,7 +332,58 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                 ),
               ),
+
+              if (showBiometricLogin) ...[
+                const SizedBox(height: 16),
+
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: OutlinedButton(
+                    onPressed: loginWithBiometrics,
+                    style: OutlinedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      side: BorderSide(
+                        color: AppColors.border(context),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Platform.isIOS
+                            ? SvgPicture.asset(
+                          'assets/icons/face_id.svg',
+                          width: 24,
+                          height: 24,
+                          colorFilter: ColorFilter.mode(
+                            AppColors.foreground(context),
+                            BlendMode.srcIn,
+                          ),
+                        )
+                            : const Icon(Icons.fingerprint),
+
+                        const SizedBox(width: 12),
+
+                        Text(
+                          Platform.isIOS
+                              ? 'Ingresar con Face ID'
+                              : 'Ingresar con huella digital',
+                          style: TextStyle(
+                            color: AppColors.foreground(context),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+
               const SizedBox(height: 16),
+
               Center(
                 child: TextButton(
                   onPressed: () {

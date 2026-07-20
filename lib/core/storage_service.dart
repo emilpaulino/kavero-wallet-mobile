@@ -16,7 +16,23 @@ class StorageService {
   }
 
   Future<void> clearToken() async {
-    await storage.delete(key: 'token');
+    await storage.delete(key: 'jwt_token');
+  }
+
+  Future<void> saveBiometricsEnabled(bool enabled) async {
+    await storage.write(
+      key: 'biometrics_enabled',
+      value: enabled.toString(),
+    );
+  }
+
+  Future<bool> isBiometricsEnabled() async {
+    final value = await storage.read(key: 'biometrics_enabled');
+    return value == 'true';
+  }
+
+  Future<void> clearBiometrics() async {
+    await storage.delete(key: 'biometrics_enabled');
   }
   
 }

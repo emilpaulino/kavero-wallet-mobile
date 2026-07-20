@@ -66,5 +66,23 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+
+	<key>NSPhotoLibraryUsageDescription</key>
+    <string>Esta aplicación necesita acceder a la galería para seleccionar una foto de perfil.</string>
+
+    <key>NSPhotoLibraryAddUsageDescription</key>
+    <string>Esta aplicación necesita guardar imágenes en la galería.</string>
+
+    <key>NSCameraUsageDescription</key>
+    <string>Esta aplicación necesita acceder a la cámara para tomar una foto de perfil.</string>
+
+    <key>NSFaceIDUsageDescription</key>
+    <string>Usa Face ID para acceder rápidamente a tu cuenta.</string>
+
+	<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+</dict>
 </dict>
 </plist>
