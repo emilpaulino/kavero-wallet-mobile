@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../../core/storage_service.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../home/home_screen.dart';
 import 'login_screen.dart';
 import '../../../shared/main_navigation_screen.dart';
 
@@ -24,11 +23,11 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> checkLogin() async {
-    final token = await storageService.getToken();
+    final hasValidToken = await storageService.hasValidToken();
 
     await Future.delayed(const Duration(seconds: 2));
 
-    if (token != null) {
+    if (hasValidToken) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
