@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class StorageService {
@@ -34,5 +35,34 @@ class StorageService {
   Future<void> clearBiometrics() async {
     await storage.delete(key: 'biometrics_enabled');
   }
-  
+
+  Future<bool> hasValidToken() async {
+    final token = await getToken();
+    if (token == null) return false;
+    return !isTokenExpired(token);
+  }
+
+  bool isTokenExpired(String token) {
+    try {
+      final parts = token.split('.');
+      if (parts.length != 3) {
+        return true;
+      }
+      final String payload = parts[1];
+      final String normalized = base64Url.normalize(payload);
+      final String decoded = utf8.decode(base64Url.decode(normalized));
+      final Map<String, dynamic> claims = jsonDecode(decoded);
+
+      if (claims.containsKey('exp')) {
+        final int exp = claims['exp'] as int;
+        final DateTime expiryDate = DateTime.fromMillisecondsSinceEpoch(exp * 1000);
+        return DateTime.now().isAfter(expiryDate);
+      }
+
+      return false;
+    } catch (_) {
+      return true;
+    }
+  }
 }
+

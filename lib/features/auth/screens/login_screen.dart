@@ -99,13 +99,13 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> loadBiometrics() async {
-    final token = await storageService.getToken();
+    final hasValidToken = await storageService.hasValidToken();
     final enabled = await storageService.isBiometricsEnabled();
 
     if (!mounted) return;
 
     setState(() {
-      showBiometricLogin = token != null && enabled;
+      showBiometricLogin = hasValidToken && enabled;
     });
   }
 
