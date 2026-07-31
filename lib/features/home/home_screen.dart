@@ -13,7 +13,9 @@ import '../auth/screens/login_screen.dart';
 import '../transactions/screens/add_transaction_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final VoidCallback? onNavigateToAccounts;
+
+  const HomeScreen({super.key, this.onNavigateToAccounts});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -118,6 +120,7 @@ class _HomeScreenState extends State<HomeScreen> {
               totalBalance: totalBalance,
               totalIncome: totalIncome,
               totalExpenses: totalExpenses,
+              onNavigateToAccounts: widget.onNavigateToAccounts,
             ),
     );
   }
@@ -131,6 +134,7 @@ class _HomeBody extends StatelessWidget {
   final double totalBalance;
   final double totalIncome;
   final double totalExpenses;
+  final VoidCallback? onNavigateToAccounts;
 
   const _HomeBody({
     required this.accounts,
@@ -138,6 +142,7 @@ class _HomeBody extends StatelessWidget {
     required this.totalBalance,
     required this.totalIncome,
     required this.totalExpenses,
+    this.onNavigateToAccounts,
   });
 
   @override
@@ -157,7 +162,14 @@ class _HomeBody extends StatelessWidget {
                 expenses: totalExpenses,
               ),
               const SizedBox(height: 32),
-              _SectionHeader(title: 'Cuentas', onSeeAll: () {}),
+              _SectionHeader(
+                title: 'Cuentas',
+                onSeeAll: () {
+                  if (onNavigateToAccounts != null) {
+                    onNavigateToAccounts!();
+                  }
+                },
+              ),
               const SizedBox(height: 14),
               accounts.isEmpty
                   ? _EmptyState(
@@ -167,6 +179,7 @@ class _HomeBody extends StatelessWidget {
                     )
                   : Column(
                       children: accounts
+                          .take(3)
                           .map(
                             (a) => Padding(
                               padding: const EdgeInsets.only(bottom: 12),
@@ -507,102 +520,111 @@ class _AccountTile extends StatelessWidget {
   const _AccountTile({required this.account});
 
   IconData get _icon {
-    switch (account.type.toLowerCase()) {
-      case 'savings':
-        return Icons.savings_outlined;
-      case 'credit':
-        return Icons.credit_card_outlined;
-      default:
-        return Icons.account_balance_outlined;
+    final nameLower = account.name.toLowerCase();
+    final typeLower = account.accountTypeName.toLowerCase();
+
+    if (nameLower.contains('efectivo') || typeLower.contains('efectivo') || typeLower.contains('cash')) {
+      return Icons.payments_rounded;
+    } else if (nameLower.contains('ahorro') || typeLower.contains('ahorro') || typeLower.contains('savings')) {
+      return Icons.savings_rounded;
+    } else if (nameLower.contains('tarjeta') || typeLower.contains('tarjeta') || typeLower.contains('credit')) {
+      return Icons.credit_card_rounded;
+    } else if (nameLower.contains('banreservas') || nameLower.contains('banco') || typeLower.contains('banco') || typeLower.contains('bank')) {
+      return Icons.account_balance_rounded;
+    } else if (nameLower.contains('inversion') || typeLower.contains('inversión') || typeLower.contains('fondo')) {
+      return Icons.trending_up_rounded;
     }
+    return Icons.account_balance_wallet_rounded;
   }
 
-  List<Color> _gradient(BuildContext context) {
-    switch (account.type.toLowerCase()) {
-      case 'savings':
-        return [const Color(0xFF10B981), const Color(0xFF0D9488)];
-      case 'credit':
-        return [const Color(0xFFF43F5E), const Color(0xFFEC4899)];
-      default:
-        return [AppColors.primary(context), AppColors.primaryDark(context)];
+  Color _getAccountColor(BuildContext context) {
+    if (account.color.isNotEmpty && account.color.startsWith('#')) {
+      try {
+        final buffer = StringBuffer();
+        if (account.color.length == 7) buffer.write('ff');
+        buffer.write(account.color.replaceFirst('#', ''));
+        return Color(int.parse(buffer.toString(), radix: 16));
+      } catch (_) {}
     }
+
+    final nameLower = account.name.toLowerCase();
+    final typeLower = account.accountTypeName.toLowerCase();
+    if (nameLower.contains('efectivo') || typeLower.contains('efectivo') || typeLower.contains('cash')) {
+      return const Color(0xFF10B981);
+    } else if (nameLower.contains('ahorro') || typeLower.contains('ahorro') || typeLower.contains('savings')) {
+      return const Color(0xFFF59E0B);
+    } else if (nameLower.contains('tarjeta') || typeLower.contains('tarjeta') || typeLower.contains('credit')) {
+      return const Color(0xFFF43F5E);
+    } else if (nameLower.contains('banreservas') || nameLower.contains('banco') || typeLower.contains('banco') || typeLower.contains('bank')) {
+      return const Color(0xFF0EA5E9);
+    } else if (nameLower.contains('inversion') || typeLower.contains('inversión')) {
+      return const Color(0xFF8B5CF6);
+    }
+    return AppColors.primary(context);
   }
 
   @override
   Widget build(BuildContext context) {
+    final accentColor = _getAccountColor(context);
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.card(context),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: AppColors.border(context)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Row(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: _gradient(context),
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(14),
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: accentColor,
+              borderRadius: BorderRadius.circular(15),
+              boxShadow: [
+                BoxShadow(
+                  color: accentColor.withOpacity(0.35),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
                 ),
-                child: Icon(_icon, color: Colors.white, size: 22),
-              ),
-
-              const SizedBox(width: 14),
-
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      account.name,
-                      style: TextStyle(
-                        color: AppColors.foreground(context),
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-
-                    const SizedBox(height: 4),
-
-                    Text(
-                      account.description,
-                      style: TextStyle(
-                        color: AppColors.muted(context),
-                        fontSize: 13,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 16),
-
-          Text(
-            CurrencyFormatter.format(account.currentBalance),
-            style: TextStyle(
-              color: AppColors.foreground(context),
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
+              ],
             ),
+            child: Icon(_icon, color: Colors.white, size: 22),
           ),
-
-          const SizedBox(height: 4),
-
-          Text(
-            account.type,
-            style: TextStyle(color: AppColors.muted(context), fontSize: 12),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  account.name,
+                  style: TextStyle(
+                    color: AppColors.foreground(context),
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  account.description.isEmpty
+                      ? account.accountTypeName
+                      : account.description,
+                  style: TextStyle(
+                    color: AppColors.muted(context),
+                    fontSize: 13,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
           ),
         ],
       ),
