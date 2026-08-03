@@ -5,6 +5,7 @@ import '../core/theme/app_colors.dart';
 import '../features/accounts/screens/accounts_screen.dart';
 import '../features/home/home_screen.dart';
 import '../features/profile/screens/profile_screen.dart';
+import '../features/transactions/screens/transactions_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -24,14 +25,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         );
 
       case 1:
-        return const Scaffold(
-          body: Center(
-            child: Text(
-              'Transactions',
-              style: TextStyle(fontSize: 30),
-            ),
-          ),
-        );
+        return const TransactionsScreen();
 
       case 2:
         return const AccountsScreen();
