@@ -36,10 +36,19 @@ The API is responsible for authentication, account management, category manageme
 * Financial overview
 * User summary information
 
+### Accounts
+
+* View list of financial accounts
+* Create and edit accounts
+* Account details screen with date-grouped transactions and quick edit button
+
 ### Transactions
 
-* Create income transactions
-* Create expense transactions
+* View movements list grouped by date with timestamps
+* Filter transactions by type, account, and date period
+* Real-time search by description or category
+* Create income transactions with live preview card
+* Create expense transactions with live preview card
 * Account selection
 * Category selection
 
@@ -55,6 +64,8 @@ The API is responsible for authentication, account management, category manageme
 * Light mode
 * Dark mode
 * Responsive design
+* Glassmorphism UI (blur headers and bottom navigation bar)
+* Fluid page transitions and micro-animated bottom navigation bar
 
 ## Architecture
 
@@ -73,42 +84,3 @@ lib
 │   └── transactions
 │
 └── main.dart
-```
-
-## Configuration
-
-### API Configuration
-
-The API base URL is configured in:
-
-```text
-lib/core/constants/api_constants.dart
-```
-
-Example:
-
-```dart
-class ApiConstants {
-  static const String baseUrl = 'http://localhost:8080';
-}
-```
-
-### Install Dependencies
-
-```bash
-flutter pub get
-```
-
-### Run the Application
-
-```bash
-flutter run
-```
-
-## Project Status
-
-The project is currently under development.
-
-## Author
-
-Emil Paulino
