@@ -6,6 +6,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/currency_formatter.dart';
 import '../models/account.dart';
 import '../services/account_service.dart';
+import 'account_detail_screen.dart';
 import 'add_edit_account_screen.dart';
 
 class AccountsScreen extends StatefulWidget {
@@ -122,6 +123,19 @@ class _AccountsScreenState extends State<AccountsScreen> {
       context,
       MaterialPageRoute(
         builder: (_) => AddEditAccountScreen(accountToEdit: accountToEdit),
+      ),
+    );
+
+    if (result == true) {
+      await loadAccounts();
+    }
+  }
+
+  Future<void> _openAccountDetailScreen(Account account) async {
+    final result = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => AccountDetailScreen(account: account),
       ),
     );
 
@@ -272,6 +286,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
                                 accentColor: accentColor,
                                 iconData: icon,
                                 hideBalance: _hideBalance,
+                                onTap: () => _openAccountDetailScreen(account),
                                 onEdit: () => _openAddEditAccountScreen(
                                   accountToEdit: account,
                                 ),
@@ -470,6 +485,7 @@ class _AccountItemCard extends StatelessWidget {
   final Color accentColor;
   final IconData iconData;
   final bool hideBalance;
+  final VoidCallback onTap;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
@@ -478,6 +494,7 @@ class _AccountItemCard extends StatelessWidget {
     required this.accentColor,
     required this.iconData,
     required this.hideBalance,
+    required this.onTap,
     required this.onEdit,
     required this.onDelete,
   });
@@ -502,7 +519,7 @@ class _AccountItemCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         child: InkWell(
           borderRadius: BorderRadius.circular(24),
-          onTap: onEdit,
+          onTap: onTap,
           child: Padding(
             padding: const EdgeInsets.all(18),
             child: Column(
